@@ -9,6 +9,14 @@ public class JdbcProperties {
     private String port;
     private String schema;
     
+    private String healthCheckQuery;
+    
+	public String getHealthCheckQuery() {
+		return healthCheckQuery;
+	}
+	public void setHealthCheckQuery(String healthCheckQuery) {
+		this.healthCheckQuery = healthCheckQuery;
+	}
 	public String getUsername() {
 		return username;
 	}

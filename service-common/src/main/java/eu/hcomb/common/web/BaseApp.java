@@ -34,6 +34,11 @@ import eu.hcomb.common.dto.User;
 
 public abstract class BaseApp<T extends BaseConfig> extends Application<T> implements Module {
 
+	public static final String DEFAULT_AUTH_BEARER = "Bearer";
+	public static final String DEFAULT_AUTH_REALM = "realm";
+	public static final String DEFAULT_AUTH_COOKIE = "jwt";
+	public static final String DEFAULT_AUTH_URL_PARAM = "token";
+
 	protected Log log = LogFactory.getLog(this.getClass());
 	
 	protected Injector injector;
@@ -49,6 +54,10 @@ public abstract class BaseApp<T extends BaseConfig> extends Application<T> imple
     	this.configuration =  configuration;
     	
     	removeDropwizardExceptionMappers(environment);
+    }
+    
+    protected void setupSecurity(Environment environment){
+    	setupSecurity(environment, DEFAULT_AUTH_URL_PARAM, DEFAULT_AUTH_COOKIE, DEFAULT_AUTH_REALM, DEFAULT_AUTH_BEARER);
     }
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
