@@ -2,9 +2,25 @@ package eu.hcomb.common.dto;
 
 public class Token {
 
+	protected boolean valid;
 	protected Long expire;
 	protected String value;
+
+	public Token(boolean valid) {
+		this.valid = valid;
+	}
+
+	public Token() {
+
+	}
 	
+	public boolean isValid() {
+		return valid;
+	}
+
+	public void setValid(boolean valid) {
+		this.valid = valid;
+	}
 	public Long getExpire() {
 		return expire;
 	}

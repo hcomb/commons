@@ -44,6 +44,7 @@ public class TokenServiceImpl extends BaseService implements TokenService {
 				.compact();
 
 		Token ret = new Token();
+		ret.setValid(true);
 		ret.setValue(token);
 		ret.setExpire(expire);
 		

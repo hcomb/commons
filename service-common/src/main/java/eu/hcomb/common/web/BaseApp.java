@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Provides;
@@ -37,12 +38,11 @@ public abstract class BaseApp<T extends BaseConfig> extends Application<T> imple
 	
 	protected Injector injector;
 	
-	BaseConfig configuration;
+	protected BaseConfig configuration;
 	
-
 	@Override
 	public void initialize(Bootstrap<T> bootstrap) {
-
+		bootstrap.getObjectMapper().setSerializationInclusion(Include.NON_NULL);
 	}
 	
     protected void defaultConfig(Environment environment, T configuration) {
