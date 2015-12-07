@@ -12,14 +12,18 @@ import io.jsonwebtoken.impl.Base64Codec;
 
 import java.security.Key;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.crypto.spec.SecretKeySpec;
+import javax.servlet.DispatcherType;
+import javax.servlet.FilterRegistration;
 import javax.ws.rs.ext.ExceptionMapper;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
@@ -30,6 +34,7 @@ import com.google.inject.Provides;
 import com.google.inject.name.Named;
 
 import eu.hcomb.common.auth.JWTAuthFilter;
+import eu.hcomb.common.cors.CorsConfigurable;
 import eu.hcomb.common.dto.User;
 
 public abstract class BaseApp<T extends BaseConfig> extends Application<T> implements Module {
@@ -54,6 +59,9 @@ public abstract class BaseApp<T extends BaseConfig> extends Application<T> imple
     	this.configuration =  configuration;
     	
     	removeDropwizardExceptionMappers(environment);
+    	
+		enableCors(environment, configuration);
+
     }
     
     protected void setupSecurity(Environment environment){
@@ -75,6 +83,22 @@ public abstract class BaseApp<T extends BaseConfig> extends Application<T> imple
         		);
         environment.jersey().register(new AuthValueFactoryProvider.Binder(User.class));
         environment.jersey().register(RolesAllowedDynamicFeature.class);
+    }
+    
+    protected void enableCors(Environment environment, BaseConfig config){
+    	if(config instanceof CorsConfigurable){
+    		log.info("enabling CORS filter");
+    		CorsConfigurable cors = (CorsConfigurable)config;
+            FilterRegistration.Dynamic filter = environment.servlets().addFilter("CORSFilter", CrossOriginFilter.class);
+
+            filter.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), false, environment.getApplicationContext().getContextPath() + "*");
+            filter.setInitParameter(CrossOriginFilter.ALLOWED_METHODS_PARAM, cors.getCorsConfig().getMethods());
+            filter.setInitParameter(CrossOriginFilter.ALLOWED_ORIGINS_PARAM, cors.getCorsConfig().getOrigins());
+            filter.setInitParameter(CrossOriginFilter.ALLOWED_HEADERS_PARAM, cors.getCorsConfig().getHeaders());
+            filter.setInitParameter(CrossOriginFilter.ALLOW_CREDENTIALS_PARAM, cors.getCorsConfig().getAllowCredentials());
+    	}else{
+    		log.warn("cannot enable CORS filter, config is not an instance of CorsConfigurable");
+    	}
     }
     
 	protected void removeDropwizardExceptionMappers(Environment environment) {

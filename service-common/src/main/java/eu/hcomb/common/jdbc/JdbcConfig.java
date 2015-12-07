@@ -1,6 +1,6 @@
-package eu.hcomb.common.dto;
+package eu.hcomb.common.jdbc;
 
-public class JdbcProperties {
+public class JdbcConfig {
 
     private String username;
     private String password;
