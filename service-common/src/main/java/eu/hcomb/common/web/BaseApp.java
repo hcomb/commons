@@ -28,14 +28,19 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.google.inject.Binder;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.name.Named;
 
 import eu.hcomb.common.auth.JWTAuthFilter;
+import eu.hcomb.common.auth.TokenAuthenticator;
+import eu.hcomb.common.auth.UserAuthorizer;
 import eu.hcomb.common.cors.CorsConfigurable;
 import eu.hcomb.common.dto.User;
+import eu.hcomb.common.service.TokenService;
+import eu.hcomb.common.service.impl.TokenServiceImpl;
 
 public abstract class BaseApp<T extends BaseConfig> extends Application<T> implements Module {
 
@@ -60,9 +65,27 @@ public abstract class BaseApp<T extends BaseConfig> extends Application<T> imple
     	
     	removeDropwizardExceptionMappers(environment);
     	
+        setupSecurity(environment);
+
 		enableCors(environment, configuration);
 
     }
+    
+	public void configureSecurity(Binder binder) {
+		
+		binder
+			.bind(TokenService.class)
+			.to(TokenServiceImpl.class);
+		
+		binder
+			.bind(Authenticator.class)
+			.to(TokenAuthenticator.class);
+
+		binder
+			.bind(Authorizer.class)
+			.to(UserAuthorizer.class);
+		
+	}
     
     protected void setupSecurity(Environment environment){
     	setupSecurity(environment, DEFAULT_AUTH_URL_PARAM, DEFAULT_AUTH_COOKIE, DEFAULT_AUTH_REALM, DEFAULT_AUTH_BEARER);
