@@ -12,7 +12,10 @@ public class TokenUtils {
 
 	public static Optional<String> getTokenFromParam(MultivaluedMap<String, String> params, String paramName) {
 		final String param = params.getFirst(paramName);
-		return Optional.of(param);
+		if(param!=null)
+			return Optional.of(param);
+		else
+			return Optional.absent();
 	}
 
 
