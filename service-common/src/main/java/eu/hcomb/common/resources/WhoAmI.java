@@ -18,7 +18,7 @@ public class WhoAmI {
 
     @GET
     @Timed
-    @RolesAllowed("user")
+    @RolesAllowed("USER")
     public User login(@Auth User user) {
     	return user;
     }
