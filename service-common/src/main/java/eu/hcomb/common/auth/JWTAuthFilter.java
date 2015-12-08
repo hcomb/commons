@@ -112,7 +112,8 @@ public class JWTAuthFilter<P extends User> extends AuthFilter<String, P> {
             return this;
         }
 
-        @Override
+		@Override
+        @SuppressWarnings({"unchecked", "rawtypes"})
         protected JWTAuthFilter<P> newInstance() {
             return new JWTAuthFilter(paramName, cookieName);
         }

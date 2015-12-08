@@ -5,13 +5,11 @@ import java.util.Properties;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.mybatis.guice.MyBatisModule;
 import org.mybatis.guice.datasource.builtin.PooledDataSourceProvider;
-import org.mybatis.guice.datasource.helper.JdbcHelper;
 
 import com.google.inject.Provides;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
-import eu.hcomb.common.jdbc.JdbcConfigurable;
 import eu.hcomb.common.web.BaseConfig;
 
 public abstract class DefaultPersistenceModule extends MyBatisModule {
