@@ -1,8 +1,11 @@
 package eu.hcomb.common.dto;
 
+import io.swagger.annotations.ApiModel;
+
 import java.security.Principal;
 import java.util.List;
 
+@ApiModel(value="User", description="User Principal")
 public class User implements Principal {
 
 	protected String name;

@@ -1,5 +1,8 @@
 package eu.hcomb.common.dto;
 
+import io.swagger.annotations.ApiModel;
+
+@ApiModel(value="Token", description="JWT Token")
 public class Token {
 
 	protected boolean valid;

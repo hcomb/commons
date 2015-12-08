@@ -5,10 +5,12 @@ import io.dropwizard.auth.AuthDynamicFeature;
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.auth.Authenticator;
 import io.dropwizard.auth.Authorizer;
+import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.Base64Codec;
+import io.swagger.jaxrs.config.BeanConfig;
 
 import java.security.Key;
 import java.util.ArrayList;
@@ -41,6 +43,7 @@ import eu.hcomb.common.cors.CorsConfigurable;
 import eu.hcomb.common.dto.User;
 import eu.hcomb.common.service.TokenService;
 import eu.hcomb.common.service.impl.TokenServiceImpl;
+import eu.hcomb.common.swagger.SwaggerConfigurable;
 
 public abstract class BaseApp<T extends BaseConfig> extends Application<T> implements Module {
 
@@ -87,6 +90,28 @@ public abstract class BaseApp<T extends BaseConfig> extends Application<T> imple
 		
 	}
     
+	protected void setUpSwagger(BaseConfig config, Environment environment) {
+		if(config instanceof SwaggerConfigurable){
+			log.info("configuring swagger");
+			SwaggerConfigurable swagger = (SwaggerConfigurable)config;
+			
+			DefaultServerFactory defaultServerFactory = (DefaultServerFactory) configuration.getServerFactory();
+			String basePath = defaultServerFactory.getApplicationContextPath();
+			
+			environment.jersey().register(io.swagger.jaxrs.listing.ApiListingResource.class);
+			environment.jersey().register(io.swagger.jaxrs.listing.SwaggerSerializers.class);
+
+			BeanConfig beanConfig = new BeanConfig();
+	        beanConfig.setHost(swagger.getSwaggerConfig().getBaseUrl());
+	        beanConfig.setBasePath(basePath);
+	        beanConfig.setResourcePackage(swagger.getSwaggerConfig().getResourcePackages());
+	        beanConfig.setScan(true);
+	        
+		}else{
+			log.warn("cannot configure swagger");
+		}
+    }
+
     protected void setupSecurity(Environment environment){
     	setupSecurity(environment, DEFAULT_AUTH_URL_PARAM, DEFAULT_AUTH_COOKIE, DEFAULT_AUTH_REALM, DEFAULT_AUTH_BEARER);
     }
