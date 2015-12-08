@@ -8,6 +8,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -31,7 +32,7 @@ public class TokenServiceImpl extends BaseService implements TokenService {
 	@Named("authTimeout")
 	protected Long timeout;
 	
-	public Token getToken(String subject, String[] roles){
+	public Token getToken(String subject, List<String> roles){
 		
 		Long expire = System.currentTimeMillis() + (timeout * 1000);
 		
