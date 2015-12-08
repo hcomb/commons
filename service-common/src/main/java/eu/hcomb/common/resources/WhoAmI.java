@@ -14,7 +14,7 @@ import com.codahale.metrics.annotation.Timed;
 
 import eu.hcomb.common.dto.User;
 
-@Api
+@Api(tags="login")
 @Path("/whoami")
 @Produces(MediaType.APPLICATION_JSON)
 public class WhoAmI {
