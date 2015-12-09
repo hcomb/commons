@@ -16,6 +16,11 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jetty.security.DefaultUserIdentity;
+import org.eclipse.jetty.security.UserAuthentication;
+import org.eclipse.jetty.server.HttpChannel;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.UserIdentity;
 
 import com.google.common.base.Optional;
 
@@ -46,6 +51,13 @@ public class JWTAuthFilter<P extends User> extends AuthFilter<String, P> {
                 final Optional<P> principal = authenticator.authenticate(token);
 
                 if (principal.isPresent()) {
+                	
+                	Request request = HttpChannel.getCurrentHttpChannel().getRequest();
+                	if (request != null) {
+                	  UserIdentity userId = new DefaultUserIdentity(null, principal.get(), null);
+                	  request.setAuthentication(new UserAuthentication(null, userId));
+                	}
+                	
                     requestContext.setSecurityContext(new SecurityContext() {
 
                         public Principal getUserPrincipal() {
