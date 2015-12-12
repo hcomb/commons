@@ -4,7 +4,6 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 import com.codahale.metrics.health.HealthCheck;
-import com.google.inject.Inject;
 
 public class RedisHealthCheck extends HealthCheck {
 
@@ -16,8 +15,9 @@ public class RedisHealthCheck extends HealthCheck {
 	
 	@Override
 	protected Result check() throws Exception {
+		Jedis jedis = null;
 		try {
-			Jedis jedis = pool.getResource();
+			jedis = pool.getResource();
 			String pong = jedis.ping();
             if ("PONG".equals(pong)) {
                 return Result.healthy();
@@ -26,6 +26,9 @@ public class RedisHealthCheck extends HealthCheck {
             }
         }catch(Exception e){
             return Result.unhealthy("Could not ping redis");
+        }finally{
+        	if(jedis!=null)
+        		jedis.close();
         }
 	}
 }

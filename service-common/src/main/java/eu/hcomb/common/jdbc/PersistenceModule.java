@@ -14,12 +14,12 @@ import com.google.inject.name.Names;
 
 import eu.hcomb.common.web.BaseConfig;
 
-public abstract class DefaultPersistenceModule extends MyBatisModule {
+public abstract class PersistenceModule extends MyBatisModule {
 	
 	protected BaseConfig configuration;
 	protected Environment environment;
 	
-	public DefaultPersistenceModule(BaseConfig configuration, Environment environment) {
+	public PersistenceModule(BaseConfig configuration, Environment environment) {
 		this.configuration = configuration;
 		this.environment = environment;
 	}
@@ -29,7 +29,7 @@ public abstract class DefaultPersistenceModule extends MyBatisModule {
         bindTransactionFactoryType(JdbcTransactionFactory.class);
 
         Names.bindProperties(binder(), createProperties());
-
+        
 	}
 	
 	protected Properties createProperties() {

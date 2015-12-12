@@ -11,17 +11,17 @@ import com.google.inject.name.Named;
 public class DatasourceHealthCheck extends HealthCheck {
 
 	@Inject
-	protected DataSource datasource;
+	protected DataSource dataSource;
 
 	@Inject
 	@Named("healthcheck.query")
 	protected String query;
-		
+
 	@Override
 	protected Result check() throws Exception {
 		Connection conn = null;
 		try {
-			conn = datasource.getConnection(); 
+			conn = dataSource.getConnection(); 
 			conn.createStatement().executeQuery(query);
 			return Result.healthy();
 		} catch (Exception e) {
