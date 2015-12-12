@@ -1,4 +1,4 @@
-package eu.hcomb.common.jedis;
+package eu.hcomb.common.redis;
 
 
 public class JedisConfig {

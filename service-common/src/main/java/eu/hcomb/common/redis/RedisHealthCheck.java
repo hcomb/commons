@@ -1,4 +1,4 @@
-package eu.hcomb.common.healthcheck;
+package eu.hcomb.common.redis;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;

@@ -1,4 +1,4 @@
-package eu.hcomb.common.healthcheck;
+package eu.hcomb.common.jdbc;
 
 import java.sql.Connection;
 

@@ -1,5 +1,6 @@
-package eu.hcomb.common.jedis;
+package eu.hcomb.common.redis;
 
+import io.dropwizard.setup.Environment;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Protocol;
@@ -7,6 +8,8 @@ import redis.clients.jedis.Protocol;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 
+import eu.hcomb.common.service.RedisService;
+import eu.hcomb.common.service.impl.RedisServiceJedisImpl;
 import eu.hcomb.common.web.BaseConfig;
 
 public class JedisModule extends AbstractModule {
@@ -15,9 +18,11 @@ public class JedisModule extends AbstractModule {
 	protected JedisPool pool;
 	
 	protected BaseConfig configuration;
+	protected Environment environment;
 	
-	public JedisModule(BaseConfig configuration) {
+	public JedisModule(BaseConfig configuration, Environment environment) {
 		this.configuration = configuration;
+		this.environment = environment;
 	}
 	
 	@Override
@@ -32,6 +37,13 @@ public class JedisModule extends AbstractModule {
 			poolConfig.setMaxTotal(jedis.getJedisConfig().getMaxTotal());
 	
 			pool = new JedisPool(poolConfig, jedis.getJedisConfig().getHost(), jedis.getJedisConfig().getPort(), Protocol.DEFAULT_TIMEOUT, jedis.getJedisConfig().getPassword());
+			
+			environment.lifecycle().manage(new ManagedJedisPool(pool));
+			
+			binder()
+				.bind(RedisService.class)
+				.to(RedisServiceJedisImpl.class);
+			
 		}else{
 			throw new RuntimeException("cannot configure jedis");
 		}
