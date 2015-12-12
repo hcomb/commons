@@ -1,5 +1,7 @@
 package eu.hcomb.common.jdbc;
 
+import io.dropwizard.setup.Environment;
+
 import java.util.Properties;
 
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
@@ -15,9 +17,11 @@ import eu.hcomb.common.web.BaseConfig;
 public abstract class DefaultPersistenceModule extends MyBatisModule {
 	
 	protected BaseConfig configuration;
+	protected Environment environment;
 	
-	public DefaultPersistenceModule(BaseConfig configuration) {
+	public DefaultPersistenceModule(BaseConfig configuration, Environment environment) {
 		this.configuration = configuration;
+		this.environment = environment;
 	}
 	
 	protected void setup(){
@@ -25,8 +29,9 @@ public abstract class DefaultPersistenceModule extends MyBatisModule {
         bindTransactionFactoryType(JdbcTransactionFactory.class);
 
         Names.bindProperties(binder(), createProperties());
-	}
 
+	}
+	
 	protected Properties createProperties() {
 		if(configuration instanceof JdbcConfigurable){
 			JdbcConfigurable jdbc = (JdbcConfigurable)configuration;

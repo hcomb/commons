@@ -1,7 +1,5 @@
 package eu.hcomb.common.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import redis.clients.jedis.JedisPubSub;
 
 
@@ -11,8 +9,8 @@ public interface RedisService {
 
 	public abstract Long publish(String channel, String message);
 
-	public abstract Long publish(String channel, Object message) throws JsonProcessingException;
+	public abstract Long publish(String channel, Object message);
 
-	public abstract void subscribe(String channel, JedisPubSub subscriber);
+	public abstract void subscribe(JedisPubSub subscriber, String... channels);
 	
 }

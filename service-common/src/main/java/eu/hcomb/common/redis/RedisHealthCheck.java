@@ -8,8 +8,11 @@ import com.google.inject.Inject;
 
 public class RedisHealthCheck extends HealthCheck {
 
-	@Inject
-	JedisPool pool;
+	protected JedisPool pool;
+	
+	public RedisHealthCheck(JedisPool pool) {
+		this.pool = pool;
+	}
 	
 	@Override
 	protected Result check() throws Exception {

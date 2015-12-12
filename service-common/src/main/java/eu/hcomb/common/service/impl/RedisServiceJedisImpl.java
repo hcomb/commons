@@ -18,9 +18,13 @@ public class RedisServiceJedisImpl implements RedisService {
 	@Inject
 	protected ObjectMapper mapper;
 	
-	public Long publish(String channel, Object message) throws JsonProcessingException {
-		String string = mapper.writeValueAsString(message);
-		return publish(channel, string);
+	public Long publish(String channel, Object message) {
+		try {
+			String string = mapper.writeValueAsString(message);
+			return publish(channel, string);
+		} catch (JsonProcessingException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	public Long publish(String channel, String message){
@@ -35,11 +39,11 @@ public class RedisServiceJedisImpl implements RedisService {
 		}
 	}
 
-	public void subscribe(String channel, JedisPubSub subscriber) {
+	public void subscribe(JedisPubSub subscriber, String... channels) {
 		Jedis jedis = null;
 		try {
 			  jedis = pool.getResource();
-			  jedis.subscribe(subscriber, channel);
+			  jedis.subscribe(subscriber, channels);
 		} finally {
 		  if (jedis != null) {
 		    jedis.close();

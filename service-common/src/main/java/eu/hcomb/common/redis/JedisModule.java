@@ -32,13 +32,15 @@ public class JedisModule extends AbstractModule {
 			JedisConfigurable jedis = (JedisConfigurable)configuration;
 		
 			poolConfig = new JedisPoolConfig();
-			poolConfig.setMinIdle(jedis.getJedisConfig().getMinIdle());
-			poolConfig.setMaxIdle(jedis.getJedisConfig().getMaxIdle());
-			poolConfig.setMaxTotal(jedis.getJedisConfig().getMaxTotal());
+			poolConfig.setMinIdle(jedis.getRedis().getMinIdle());
+			poolConfig.setMaxIdle(jedis.getRedis().getMaxIdle());
+			poolConfig.setMaxTotal(jedis.getRedis().getMaxTotal());
 	
-			pool = new JedisPool(poolConfig, jedis.getJedisConfig().getHost(), jedis.getJedisConfig().getPort(), Protocol.DEFAULT_TIMEOUT, jedis.getJedisConfig().getPassword());
+			pool = new JedisPool(poolConfig, jedis.getRedis().getHost(), jedis.getRedis().getPort(), Protocol.DEFAULT_TIMEOUT, jedis.getRedis().getPassword());
 			
 			environment.lifecycle().manage(new ManagedJedisPool(pool));
+			
+			environment.healthChecks().register("redis", new RedisHealthCheck(pool));
 			
 			binder()
 				.bind(RedisService.class)
