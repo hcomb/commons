@@ -1,0 +1,1 @@
+docker run -d -p 8180:8180 hcomb/authz
