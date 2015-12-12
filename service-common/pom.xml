@@ -8,6 +8,7 @@
 
 	<properties>
 		<dropwizard.version>0.9.1</dropwizard.version>
+		<jedis.version>2.6.0</jedis.version>
 	</properties>
 
 	<dependencies>
@@ -21,6 +22,12 @@
 			<groupId>io.dropwizard</groupId>
 			<artifactId>dropwizard-auth</artifactId>
 			<version>${dropwizard.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>redis.clients</groupId>
+			<artifactId>jedis</artifactId>
+			<version>${jedis.version}</version>
 		</dependency>
 
 		<dependency>
