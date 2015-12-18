@@ -9,8 +9,9 @@ public class BaseConfig extends Configuration {
 
 	protected Log log = LogFactory.getLog(this.getClass());
 
-	private String authKey;
-	private Long authTimeout;
+	protected String authKey;
+	
+	protected Long authTimeout;
 
 	public Long getAuthTimeout() {
 		return authTimeout;
@@ -18,6 +19,14 @@ public class BaseConfig extends Configuration {
 
 	public String getAuthKey() {
 		return authKey;
+	}
+
+	public void setAuthKey(String authKey) {
+		this.authKey = authKey;
+	}
+
+	public void setAuthTimeout(Long authTimeout) {
+		this.authTimeout = authTimeout;
 	}
 	
 }
