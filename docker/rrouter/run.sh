@@ -1,0 +1,1 @@
+java -jar /d/dev/workspaces/personale/hcomb/integ/rrouter-service/target/rrouter-service-1.0.0.jar server /d/dev/workspaces/personale/hcomb/integ/rrouter-service/test.yml
