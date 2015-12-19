@@ -12,6 +12,19 @@
 	</properties>
 
 	<dependencies>
+	
+		<dependency>
+			<groupId>eu.hcomb</groupId>
+			<artifactId>rrouter-api</artifactId> 
+			<version>1.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>eu.hcomb</groupId>
+			<artifactId>rrouter-client</artifactId> 
+			<version>1.0.0</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>io.dropwizard</groupId>
 			<artifactId>dropwizard-core</artifactId>

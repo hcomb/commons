@@ -30,6 +30,7 @@ public abstract class PersistenceModule extends MyBatisModule {
 
         Names.bindProperties(binder(), createProperties());
         
+        
 	}
 	
 	protected Properties createProperties() {

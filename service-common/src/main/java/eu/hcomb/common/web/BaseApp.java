@@ -5,6 +5,7 @@ import io.dropwizard.auth.AuthDynamicFeature;
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.auth.Authenticator;
 import io.dropwizard.auth.Authorizer;
+import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -21,6 +22,7 @@ import java.util.Set;
 import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
+import javax.ws.rs.client.Client;
 import javax.ws.rs.ext.ExceptionMapper;
 
 import org.apache.commons.logging.Log;
@@ -41,6 +43,7 @@ import eu.hcomb.common.auth.TokenAuthenticator;
 import eu.hcomb.common.auth.UserAuthorizer;
 import eu.hcomb.common.cors.CorsConfigurable;
 import eu.hcomb.common.dto.User;
+import eu.hcomb.common.service.EventEmitter;
 import eu.hcomb.common.service.TokenService;
 import eu.hcomb.common.service.impl.TokenServiceImpl;
 import eu.hcomb.common.swagger.SwaggerConfigurable;
@@ -57,14 +60,25 @@ public abstract class BaseApp<T extends BaseConfig> extends Application<T> imple
 	protected Injector injector;
 	
 	protected BaseConfig configuration;
+	protected Environment environment;
+	
+	protected Client client;
 	
 	@Override
 	public void initialize(Bootstrap<T> bootstrap) {
 		bootstrap.getObjectMapper().setSerializationInclusion(Include.NON_NULL);
+
+
+	}
+	
+	protected void init(Environment environment, T configuration){
+    	this.configuration =  configuration;
+    	this.environment = environment;
+    	
+		client = new JerseyClientBuilder(environment).using(this.configuration.getJerseyClientConfiguration()).build(getName());
 	}
 	
     protected void defaultConfig(Environment environment, T configuration) {
-    	this.configuration =  configuration;
     	
     	removeDropwizardExceptionMappers(environment);
     	
@@ -72,8 +86,12 @@ public abstract class BaseApp<T extends BaseConfig> extends Application<T> imple
 
 		enableCors(environment, configuration);
 
+		EventEmitter eventEmitter = injector.getInstance(EventEmitter.class);
+		if(!"rrouter-service".equals(getName()))
+			eventEmitter.init(getName(), environment);
+		
     }
-    
+        
 	public void configureSecurity(Binder binder) {
 		
 		binder
@@ -178,5 +196,16 @@ public abstract class BaseApp<T extends BaseConfig> extends Application<T> imple
 	@Named("authTimeout")
 	public Long getAuthTimeout(){
 		return configuration.getAuthTimeout();
+	}
+	
+	@Provides
+	@Named("rrouter.url")
+	public String getRRouterUrl(){
+		return configuration.getRrouterUrl();
+	}
+
+	@Provides
+	public Client getClient(){
+		return this.client;
 	}
 }
