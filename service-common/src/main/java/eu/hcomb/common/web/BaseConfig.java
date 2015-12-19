@@ -18,6 +18,7 @@ public class BaseConfig extends Configuration {
 	
     protected String rrouterUrl;
     
+    @JsonProperty("jerseyClient")
     protected JerseyClientConfiguration jerseyClient = new JerseyClientConfiguration();
 
 	public Long getAuthTimeout() {
@@ -40,13 +41,16 @@ public class BaseConfig extends Configuration {
 		return rrouterUrl;
 	}
 
-    @JsonProperty("jerseyClient")
-    public JerseyClientConfiguration getJerseyClientConfiguration() {
-        return jerseyClient;
-    }
-
 	public void setRrouterUrl(String rrouterUrl) {
 		this.rrouterUrl = rrouterUrl;
+	}
+
+	public JerseyClientConfiguration getJerseyClient() {
+		return jerseyClient;
+	}
+
+	public void setJerseyClient(JerseyClientConfiguration jerseyClient) {
+		this.jerseyClient = jerseyClient;
 	}
 	
 }

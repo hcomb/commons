@@ -8,21 +8,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.ws.rs.core.MultivaluedMap;
+
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import eu.hcomb.common.dto.EventDTO;
 import eu.hcomb.common.redis.ManagedJedisPool;
 import eu.hcomb.common.redis.RedisHealthCheck;
+import eu.hcomb.common.redis.SendHandler;
 import eu.hcomb.common.service.EventEmitter;
+import eu.hcomb.common.service.RedisService;
 import eu.hcomb.rrouter.client.RouterClient;
+import eu.hcomb.rrouter.dto.EndpointDTO;
 import eu.hcomb.rrouter.dto.RedisInstanceDTO;
 import eu.hcomb.rrouter.dto.RouteDTO;
 
@@ -34,20 +44,83 @@ public class RedisEventEmitter implements EventEmitter {
 	protected Log log = LogFactory.getLog(this.getClass());
 	
 	@Inject
-	RouterClient routerClient;
+	protected RouterClient routerClient;
 	
-	List<RedisInstanceDTO> instances;
-	Map<String,RouteDTO> routes;
+	@Inject
+	protected RedisService redisService;
 	
-	String serviceName;
+	protected List<RedisInstanceDTO> instances;
+	protected Map<String,RouteDTO> routes;
+	
+	protected String serviceName;
 	
 	protected Map<String,JedisPool> pools = new HashMap<String,JedisPool>();
 	
+	protected ObjectMapper mapper = new ObjectMapper();
 	
+	protected SendHandler queueHandler = new SendHandler() {
+		public void sendPayload(Jedis out, String destination, String payload) {
+			out.lpush(destination, payload);
+		}
+	};
+	
+	protected SendHandler topicHandler = new SendHandler() {
+		public void sendPayload(Jedis out, String destination, String payload) {
+			out.publish(destination, payload);
+		}
+	};
+
 	public void emit(String event, Object data) {
+		try{
+			log.debug("emitting event:"+event+" data: "+data);
+			emitInternal(event, data, null, null, null, null, null);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+
+	public void emit(String event, Object data, String method, 
+			String url, MultivaluedMap<String, String> queryParameters, MultivaluedMap<String, String> requestHeaders, String remoteAddress) {
+		try{
+			log.debug("emitting event:"+event+" data: "+data);
+			emitInternal(event, data, method, url, queryParameters, requestHeaders, remoteAddress);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+
+	public void emitInternal(String event, Object data, String method, String url, 
+			MultivaluedMap<String, String> queryParameters, MultivaluedMap<String, String> requestHeaders, String remoteAddress) throws JsonProcessingException {
+		RouteDTO route = getRoute(event);
+		if(route == null){
+			log.warn("cannot find a route for event: "+event);
+			return;
+		}
+		
+		EndpointDTO endpoint = route.getTo();
+		
+		if(endpoint.getType().equals("queue")){
+			redisService.send(pools.get(endpoint.getInstance()), null, endpoint.getKey(), getStringValue(data, method, url, queryParameters, requestHeaders, remoteAddress), queueHandler);
+		}else if(endpoint.getType().equals("topic")){
+			redisService.send(pools.get(endpoint.getInstance()), null, endpoint.getKey(), getStringValue(data, method, url, queryParameters, requestHeaders, remoteAddress), topicHandler);
+		}else{
+			log.warn("cannot handle type: " + endpoint.getType()+" for event: "+event);
+		}
 		
 	}
 	
+	private String getStringValue(Object data, String method, String url, 
+				MultivaluedMap<String, String> queryParameters, MultivaluedMap<String, String> requestHeaders, String remoteAddress) throws JsonProcessingException {
+			return mapper.writeValueAsString(EventDTO.build(serviceName, data, method, url, queryParameters, requestHeaders, remoteAddress));
+	}
+
+	private RouteDTO getRoute(String event) {
+		for (String key : routes.keySet()) 
+			if(event!=null && event.equals(key))
+				return routes.get(key);
+		return null;
+	}
+
 	public void init(String serviceName, Environment environment){
 		log.debug("initializing event emitter");
 		
@@ -88,17 +161,13 @@ public class RedisEventEmitter implements EventEmitter {
 				environment.lifecycle().manage(new ManagedJedisPool(pool));
 				environment.healthChecks().register("redis-"+instance.getName(), new RedisHealthCheck(pool));
 				
-				setPool(instance.getName(), pool);
+				pools.put(instance.getName(), pool);
 			}
 		}
 
 		log.debug("initialized event emitter with "+managedInstances.size()+" instances and "+routes.size()+" routes");
 	}
-	
-	
-	public JedisPool setPool(String key, final JedisPool pool) {
-		String pkey = "router.pool."+key + ".active";
-		return pools.put(key, pool);
-	}
 
+
+		
 }

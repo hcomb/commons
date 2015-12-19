@@ -43,6 +43,8 @@ import eu.hcomb.common.auth.TokenAuthenticator;
 import eu.hcomb.common.auth.UserAuthorizer;
 import eu.hcomb.common.cors.CorsConfigurable;
 import eu.hcomb.common.dto.User;
+import eu.hcomb.common.redis.EventErrorMapper;
+import eu.hcomb.common.redis.EventExceptionMapper;
 import eu.hcomb.common.service.EventEmitter;
 import eu.hcomb.common.service.TokenService;
 import eu.hcomb.common.service.impl.TokenServiceImpl;
@@ -75,9 +77,14 @@ public abstract class BaseApp<T extends BaseConfig> extends Application<T> imple
     	this.configuration =  configuration;
     	this.environment = environment;
     	
-		client = new JerseyClientBuilder(environment).using(this.configuration.getJerseyClientConfiguration()).build(getName());
+		client = new JerseyClientBuilder(environment).using(this.configuration.getJerseyClient()).build(getName());
 	}
 	
+	public void setupExceptionMappers() {
+		environment.jersey().register(injector.getInstance(EventExceptionMapper.class));
+		environment.jersey().register(injector.getInstance(EventErrorMapper.class));
+	}
+
     protected void defaultConfig(Environment environment, T configuration) {
     	
     	removeDropwizardExceptionMappers(environment);
