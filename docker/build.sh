@@ -1,3 +1,7 @@
+echo " * building common-client"
+cd /d/dev/workspaces/personale/hcomb/commons/common-client
+mvn -q clean install
+
 echo " * building rrouter-api"
 cd /d/dev/workspaces/personale/hcomb/integ/rrouter-api
 mvn -q clean install
