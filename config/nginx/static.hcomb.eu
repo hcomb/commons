@@ -1,0 +1,13 @@
+server {
+        listen 80;
+
+        root /media/sf_hcomb/commons/static;
+        index index.html index.htm;
+
+        server_name static.hcomb.eu;
+
+        location / {
+                add_header "Access-Control-Allow-Origin" "*";
+                try_files $uri $uri/ =404;
+        }
+}
