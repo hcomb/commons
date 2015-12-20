@@ -2,7 +2,7 @@ server {
         listen 80;
 
         root /media/sf_hcomb/authz/authz-ui;
-        index index.html index.htm;
+        index index.html;
 
         server_name authz.hcomb.eu;
 
