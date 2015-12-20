@@ -5,8 +5,8 @@
 	<artifactId>common-client</artifactId>
 	<version>1.0.0</version>
 	<name>common-client</name>
-	
-		<properties>
+
+	<properties>
 		<dropwizard.version>0.9.1</dropwizard.version>
 	</properties>
 
@@ -23,4 +23,19 @@
 			<version>4.0</version>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.3</version>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	
 </project>
