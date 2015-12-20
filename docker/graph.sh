@@ -1,0 +1,1 @@
+mvn com.github.janssk1:maven-dependencygraph-plugin:1.0:graph
