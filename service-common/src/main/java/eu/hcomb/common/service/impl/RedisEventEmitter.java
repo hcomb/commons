@@ -16,25 +16,21 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import eu.hcomb.common.dto.EventDTO;
-import eu.hcomb.common.redis.ManagedJedisPool;
-import eu.hcomb.common.redis.RedisHealthCheck;
 import eu.hcomb.common.redis.SendHandler;
 import eu.hcomb.common.service.EventEmitter;
+import eu.hcomb.common.service.RedisPoolContainer;
 import eu.hcomb.common.service.RedisService;
-import eu.hcomb.rrouter.client.RouterClient;
 import eu.hcomb.rrouter.dto.EndpointDTO;
 import eu.hcomb.rrouter.dto.RedisInstanceDTO;
 import eu.hcomb.rrouter.dto.RouteDTO;
+import eu.hcomb.rrouter.service.RouterService;
 
 @Singleton
 public class RedisEventEmitter implements EventEmitter {
@@ -44,17 +40,18 @@ public class RedisEventEmitter implements EventEmitter {
 	protected Log log = LogFactory.getLog(this.getClass());
 	
 	@Inject
-	protected RouterClient routerClient;
-	
+	protected RouterService routerService;
+
 	@Inject
 	protected RedisService redisService;
+
+	@Inject
+	protected RedisPoolContainer redisPools;
 	
 	protected List<RedisInstanceDTO> instances;
 	protected Map<String,RouteDTO> routes;
 	
 	protected String serviceName;
-	
-	protected Map<String,JedisPool> pools = new HashMap<String,JedisPool>();
 	
 	protected ObjectMapper mapper = new ObjectMapper();
 	
@@ -100,9 +97,9 @@ public class RedisEventEmitter implements EventEmitter {
 		EndpointDTO endpoint = route.getTo();
 		
 		if(endpoint.getType().equals("queue")){
-			redisService.send(pools.get(endpoint.getInstance()), null, endpoint.getKey(), getStringValue(data, method, url, queryParameters, requestHeaders, remoteAddress), queueHandler);
+			redisService.send(redisPools.getPool(endpoint.getInstance()), null, endpoint.getKey(), getStringValue(data, method, url, queryParameters, requestHeaders, remoteAddress), queueHandler);
 		}else if(endpoint.getType().equals("topic")){
-			redisService.send(pools.get(endpoint.getInstance()), null, endpoint.getKey(), getStringValue(data, method, url, queryParameters, requestHeaders, remoteAddress), topicHandler);
+			redisService.send(redisPools.getPool(endpoint.getInstance()), null, endpoint.getKey(), getStringValue(data, method, url, queryParameters, requestHeaders, remoteAddress), topicHandler);
 		}else{
 			log.warn("cannot handle type: " + endpoint.getType()+" for event: "+event);
 		}
@@ -126,8 +123,8 @@ public class RedisEventEmitter implements EventEmitter {
 		
 		this.serviceName = serviceName;
 		
-		instances = routerClient.getAllInstances();
-		List<RouteDTO> tmp = routerClient.getAllRoutes();
+		instances = routerService.getAllInstances();
+		List<RouteDTO> tmp = routerService.getAllRoutes();
 		routes = new HashMap<String,RouteDTO>();
 		Set<String> managedInstances = new HashSet<String>();
 		//TODO: filtro sul servizio?
@@ -149,19 +146,7 @@ public class RedisEventEmitter implements EventEmitter {
 		
 		for (RedisInstanceDTO instance : instances) {
 			if(managedInstances.contains(instance.getName())){
-				JedisPoolConfig poolConfig = new JedisPoolConfig();
-				poolConfig.setMinIdle(instance.getMinIdle());
-				poolConfig.setMaxIdle(instance.getMaxIdle());
-				poolConfig.setMaxTotal(instance.getMaxTotal());
-		
-				JedisPool pool = new JedisPool(poolConfig, instance.getHost(), instance.getPort(), 2000);
-
-				log.debug("registering and managing redis pool: "+instance.getName());
-				
-				environment.lifecycle().manage(new ManagedJedisPool(pool));
-				environment.healthChecks().register("redis-"+instance.getName(), new RedisHealthCheck(pool));
-				
-				pools.put(instance.getName(), pool);
+				redisPools.register(environment, instance);
 			}
 		}
 

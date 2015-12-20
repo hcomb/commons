@@ -46,9 +46,14 @@ import eu.hcomb.common.dto.User;
 import eu.hcomb.common.redis.EventErrorMapper;
 import eu.hcomb.common.redis.EventExceptionMapper;
 import eu.hcomb.common.service.EventEmitter;
+import eu.hcomb.common.service.RedisPoolContainer;
 import eu.hcomb.common.service.TokenService;
+import eu.hcomb.common.service.impl.RedisEventEmitter;
+import eu.hcomb.common.service.impl.RedisPoolContainerImpl;
 import eu.hcomb.common.service.impl.TokenServiceImpl;
 import eu.hcomb.common.swagger.SwaggerConfigurable;
+import eu.hcomb.rrouter.client.RouterClient;
+import eu.hcomb.rrouter.service.RouterService;
 
 public abstract class BaseApp<T extends BaseConfig> extends Application<T> implements Module {
 
@@ -94,11 +99,28 @@ public abstract class BaseApp<T extends BaseConfig> extends Application<T> imple
 		enableCors(environment, configuration);
 
 		EventEmitter eventEmitter = injector.getInstance(EventEmitter.class);
-		if(!"rrouter-service".equals(getName()))
-			eventEmitter.init(getName(), environment);
+		eventEmitter.init(getName(), environment);
 		
     }
-        
+    public void configureEventEmitter(Binder binder) {
+		if(!"rrouter-service".equals(getName())){
+			log.debug("remote event emitter initialization");
+
+			binder
+				.bind(RouterService.class)
+				.to(RouterClient.class);
+		}
+		
+		binder
+			.bind(EventEmitter.class)
+			.to(RedisEventEmitter.class);
+		
+		binder
+			.bind(RedisPoolContainer.class)
+			.to(RedisPoolContainerImpl.class);
+	
+    }
+    
 	public void configureSecurity(Binder binder) {
 		
 		binder

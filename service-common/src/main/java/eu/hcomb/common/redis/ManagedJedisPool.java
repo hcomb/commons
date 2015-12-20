@@ -12,17 +12,19 @@ public class ManagedJedisPool implements Managed {
 	protected Log log = LogFactory.getLog(this.getClass());
 	
 	protected JedisPool pool;
+	protected String name;
 	
-	public ManagedJedisPool(JedisPool pool) {
+	public ManagedJedisPool(JedisPool pool, String name) {
+		this.name = name;
 		this.pool = pool;
 	}
 	
 	public void start() throws Exception {
-		log.debug("starting jedis pool");
+		log.debug("starting jedis pool: "+name);
 	}
 	
 	public void stop() throws Exception {
-		log.debug("stopping jedis pool");
+		log.debug("stopping jedis pool: "+name);
 		pool.close();
 	}
 }

@@ -12,6 +12,7 @@ import eu.hcomb.common.service.RedisService;
 import eu.hcomb.common.service.impl.RedisServiceJedisImpl;
 import eu.hcomb.common.web.BaseConfig;
 
+@Deprecated
 public class JedisModule extends AbstractModule {
 	
 	protected JedisPoolConfig poolConfig;
@@ -38,7 +39,7 @@ public class JedisModule extends AbstractModule {
 	
 			pool = new JedisPool(poolConfig, jedis.getRedis().getHost(), jedis.getRedis().getPort(), Protocol.DEFAULT_TIMEOUT, jedis.getRedis().getPassword());
 			
-			environment.lifecycle().manage(new ManagedJedisPool(pool));
+			environment.lifecycle().manage(new ManagedJedisPool(pool, jedis.getRedis().getHost()+":"+jedis.getRedis().getPort()));
 			
 			environment.healthChecks().register("redis", new RedisHealthCheck(pool));
 			
